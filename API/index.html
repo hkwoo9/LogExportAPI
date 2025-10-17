@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>방화벽 로그 추출 솔루션</title>
+  <style>
+    body {
+      font-family: 'Malgun Gothic', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 70px);
+    }
+
+    .left-panel {
+      width: 35%;
+      background-color: #ecf0f1;
+      padding: 10px 15px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #bdc3c7;
+    }
+
+    .device-search {
+      position: sticky;
+      top: 0;
+      background-color: #ecf0f1;
+      padding-bottom: 10px;
+      z-index: 1;
+    }
+
+    .device-list {
+      flex-grow: 1;
+      overflow-y: auto;
+      border-top: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .right-panel {
+      width: 65%;
+      padding: 25px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background-color: white;
+      border: 1px solid #dcdde1;
+      border-radius: 8px;
+      padding: 20px 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .styled-radio {
+      display: inline-block;
+      margin-right: 15px;
+    }
+
+    .styled-radio input[type="radio"] {
+      display: none;
+    }
+
+    .styled-radio label {
+      padding: 6px 12px;
+      border: 1px solid #3498db;
+      border-radius: 4px;
+      background-color: white;
+      color: #3498db;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .styled-radio input[type="radio"]:checked + label {
+      background-color: #3498db;
+      color: white;
+    }
+
+    button {
+      background-color: #2980b9;
+      color: white;
+      font-weight: bold;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #1f6391;
+    }
+
+    #result {
+      white-space: pre-wrap;
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fefefe;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+<header>방화벽 로그 추출 솔루션</header>
+<div class="container">
+  <div class="left-panel">
+    <div class="device-search">
+      <input type="text" id="searchInput" placeholder="장비명 검색..." onkeyup="filterTable()">
+    </div>
+    <div class="device-list">
+      <form id="logForm" method="POST">
+        <table id="deviceTable">
+          <thead>
+          <tr>
+            <th>선택</th>
+            <th>장비명</th>
+            <th>IP</th>
+            <th>Vendor</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for device in devices %}
+            <tr>
+              <td><input type="radio" name="selected_device" value="{{ device.name }}" onclick="handleDeviceSelection('{{ device.vendor }}')"></td>
+              <td>{{ device.name }}</td>
+              <td>{{ device.management_ip }}</td>
+              <td>{{ device.vendor }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="card">
+      <div class="section-title">로그 종류 선택</div>
+      <div class="styled-radio">
+        <input type="radio" name="menu" value="traffic" id="menu_traffic" checked onchange="toggleMenu()">
+        <label for="menu_traffic">트래픽 로그</label>
+      </div>
+      <div class="styled-radio">
+        <input type="radio" name="menu" value="system" id="menu_system" onchange="toggleMenu()">
+        <label for="menu_system">시스템 로그</label>
+      </div>
+    </div>
+
+    <div id="traffic-section" class="card">
+      <div class="section-title">탐색 방식</div>
+      <div class="styled-radio">
+        <input type="radio" name="mode" value="manual" id="mode_manual" checked onchange="toggleMode()">
+        <label for="mode_manual">수동 선택</label>
+      </div>
+      <div class="styled-radio">
+        <input type="radio" name="mode" value="auto" id="mode_auto" onchange="toggleMode()">
+        <label for="mode_auto">자동 탐색</label>
+      </div>
+
+      <label>출발지 IP</label>
+      <input type="text" name="src_ip">
+      <label>목적지 IP</label>
+      <input type="text" name="dst_ip">
+
+      <label>계정</label>
+      <input type="text" id="username" name="username">
+      <label>비밀번호</label>
+      <input type="password" id="password" name="password">
+
+      <button type="submit" formaction="/run_traffic">트래픽 로그 실행</button>
+    </div>
+
+    <div id="system-section" class="card" style="display:none;">
+      <div class="section-title">로그 레벨 및 계정</div>
+
+      <label>로그 레벨</label>
+      <select name="level" id="log_level">
+        <option value="CRITICAL">CRITICAL</option>
+        <option value="MAJOR">MAJOR</option>
+        <option value="INFO">INFO</option>
+      </select>
+
+      <label>계정</label>
+      <input type="text" id="sys_username" name="username">
+      <label>비밀번호</label>
+      <input type="password" id="sys_password" name="password">
+
+      <button type="submit" formaction="/run_system">시스템 로그 실행</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">결과창</div>
+      <div id="result">{{ result|safe }}</div>
+    </div>
+  </div>
+</div>
+</form>
+
+<script>
+  function toggleMode() {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const radios = document.querySelectorAll("input[type=radio][name=selected_device]");
+    radios.forEach(r => r.disabled = (mode === "auto"));
+  }
+
+  function toggleMenu() {
+    const menu = document.querySelector('input[name="menu"]:checked').value;
+    document.getElementById("traffic-section").style.display = (menu === "traffic") ? "block" : "none";
+    document.getElementById("system-section").style.display = (menu === "system") ? "block" : "none";
+  }
+
+  function handleDeviceSelection(vendor) {
+    const isSecui = vendor === "Secui Bluemax";
+    document.getElementById("sys_username").disabled = isSecui;
+    document.getElementById("sys_password").disabled = isSecui;
+  }
+
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#deviceTable tbody tr");
+    rows.forEach(row => {
+      const name = row.cells[1].textContent.toLowerCase();
+      row.style.display = name.includes(input) ? "" : "none";
+    });
+  }
+
+  window.onload = function () {
+    toggleMode();
+    toggleMenu();
+  }
+</script>
+</body>
+</html>
