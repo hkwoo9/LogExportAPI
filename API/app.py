@@ -38,17 +38,19 @@ def run_traffic():
     if mode == "manual":
         src_ip = request.form.get("src_ip")
         dst_ip = request.form.get("dst_ip")
-        selected_name = request.form.get("selected_device")
+        selected_name = request.form.get("selected_device") 
         if not selected_name:
             return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비를 선택하세요.")
         info = firewall_info_dict.get(selected_name)
+        print("[디버깅/선택창]",info)
         if not info:
             return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 정보 없음.")
         vendor = info['vendor']
+        firewall_ip = info['management_ip']
         print(f"[디버깅용] 수동 모드 선택: {selected_name}, vendor: {vendor}")  # 디버깅용
 
         if vendor == "Paloalto":
-            result = paloalto_fetch_traffic(info, src_ip, dst_ip,username, password)
+            result = paloalto_fetch_traffic(firewall_ip , src_ip, dst_ip, username, password)
         elif vendor == "Secui Bluemax":
             result = fetch_secui_traffic_logs(info,src_ip,dst_ip)
         else:
@@ -63,8 +65,9 @@ def run_traffic():
             if not info:
                 continue
             vendor = info['vendor']
+            firewall_ip = info['management_ip']
             if vendor == "Paloalto":
-                result += paloalto_fetch_traffic(info, src_ip, dst_ip, username, password)
+                result += paloalto_fetch_traffic(firewall_ip, src_ip, dst_ip, username, password)
             elif vendor == "Secui Bluemax":
                 result += fetch_secui_traffic_logs(info)
             else:
@@ -80,18 +83,27 @@ def run_system():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    print(f"[디버깅용] 시스템 로그 요청: {selected_name}, Level: {level}")  # 디버깅용
+    print(f"[디버깅용] 시스템 로그 요청: {selected_name}, Level: {level}, username : {username}, password : {password}")  # 디버깅용
 
     if not selected_name:
         return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 선택 필수")
 
     info = firewall_info_dict.get(selected_name)
+    print("[디버깅/선택창]",info)
     if not info:
         return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 정보 없음.")
     vendor = info['vendor']
+    firewall_ip = info['management_ip']
+    print("Vendor:",vendor)
+    print("Firewall_IP ",firewall_ip)
 
     if vendor == "Paloalto":
-        result = paloalto_fetch_system(info, username, password, level)
+        print("여기서보자",firewall_ip)
+        print("여기서보자",level)
+        print("여기서보자",username)
+        print("여기서보자",password)
+        result = paloalto_fetch_system(firewall_ip, level, username, password)
+        
     elif vendor == "Secui Bluemax":
         result = fetch_secui_system_logs(info, level)
         print("보낸 level은 뭘까요",level) # 디버깅깅
