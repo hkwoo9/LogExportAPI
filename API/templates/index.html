@@ -1,282 +1,252 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>방화벽 로그 추출 솔루션</title>
   <style>
-    body {
-      font-family: 'Malgun Gothic', sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .container {
-      display: flex;
-      height: calc(100vh - 70px);
-    }
-
-    .left-panel {
-      width: 35%;
-      background-color: #ecf0f1;
-      padding: 10px 15px;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #bdc3c7;
-    }
-
-    .device-search {
-      position: sticky;
-      top: 0;
-      background-color: #ecf0f1;
-      padding-bottom: 10px;
-      z-index: 1;
-    }
-
-    .device-list {
-      flex-grow: 1;
-      overflow-y: auto;
-      border-top: 1px solid #ccc;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    table th, table td {
-      padding: 8px;
-      border-bottom: 1px solid #ccc;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    .right-panel {
-      width: 65%;
-      padding: 25px;
-      overflow-y: auto;
-    }
-
-    .card {
-      background-color: white;
-      border: 1px solid #dcdde1;
-      border-radius: 8px;
-      padding: 20px 30px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .styled-radio {
-      display: inline-block;
-      margin-right: 15px;
-    }
-
-    .styled-radio input[type="radio"] {
-      display: none;
-    }
-
-    .styled-radio label {
-      padding: 6px 12px;
-      border: 1px solid #3498db;
-      border-radius: 4px;
-      background-color: white;
-      color: #3498db;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 14px;
-    }
-
-    .styled-radio input[type="radio"]:checked + label {
-      background-color: #3498db;
-      color: white;
-    }
-
-    button {
-      background-color: #2980b9;
-      color: white;
-      font-weight: bold;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      margin-top: 20px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    button:hover {
-      background-color: #1f6391;
-    }
-
-    #result {
-      white-space: pre-wrap;
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #fefefe;
-      border: 1px solid #bdc3c7;
-      border-radius: 4px;
-      font-family: Consolas, monospace;
-    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background:#f5f6fa; color:#2c3e50; }
+    header { height: 70px; display:flex; align-items:center; padding:0 20px; background:#2c3e50; color:#fff; font-size:18px; font-weight:700; letter-spacing:.3px; }
+    .container { display:flex; height: calc(100vh - 70px); }
+    .left-panel { width:35%; background:#ecf0f1; padding:10px 15px; display:flex; flex-direction:column; border-right:1px solid #bdc3c7; }
+    .device-search { position:sticky; top:0; background:#ecf0f1; padding-bottom:10px; z-index:1; }
+    .device-list { flex-grow:1; overflow-y:auto; border-top:1px solid #ccc; }
+    table { width:100%; border-collapse:collapse; }
+    table th, table td { padding:8px; border-bottom:1px solid #ccc; text-align:left; font-size:14px; }
+    .right-panel { width:65%; padding:25px; overflow-y:auto; }
+    .card { background:#fff; border:1px solid #dcdde1; border-radius:8px; padding:20px 30px; box-shadow:0 2px 6px rgba(0,0,0,.05); margin-bottom:30px; }
+    .section-title { font-size:18px; font-weight:bold; color:#2c3e50; margin-bottom:15px; }
+    label { display:block; margin-top:10px; font-weight:bold; font-size:14px; }
+    input[type="text"], input[type="password"], select { width:100%; padding:8px; margin-top:5px; border:1px solid #ccc; border-radius:4px; }
+    .styled-radio { display:inline-block; margin-right:15px; }
+    .styled-radio input[type="radio"] { display:none; }
+    .styled-radio label { padding:6px 12px; border:1px solid #3498db; border-radius:4px; background:#fff; color:#3498db; cursor:pointer; transition:all .2s; font-size:14px; }
+    .styled-radio input[type="radio"]:checked + label { background:#3498db; color:#fff; }
+    button { background:#2980b9; color:#fff; font-weight:bold; padding:10px; border:none; border-radius:4px; margin-top:20px; cursor:pointer; width:100%; }
+    button:hover { background:#1f6391; }
+    button[disabled]{ opacity:.6; cursor:not-allowed; }
+    input[disabled], select[disabled]{ background:#f5f5f5; cursor:not-allowed; opacity:.8; }
+    #result { white-space:pre-wrap; margin-top:20px; padding:15px; background:#fefefe; border:1px solid #bdc3c7; border-radius:4px;
+      font-family:Consolas, ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; min-height:120px; }
   </style>
 </head>
 <body>
-<header>방화벽 로그 추출 솔루션</header>
-<div class="container">
-  <div class="left-panel">
-    <div class="device-search">
-      <input type="text" id="searchInput" placeholder="장비명 검색..." onkeyup="filterTable()">
-    </div>
-    <div class="device-list">
-      <form id="logForm" method="POST">
+  <!-- ✅ 두 개의 독립 폼: 버튼/엔터가 확실히 각자 엔드포인트로 이동 -->
+  <form id="trafficForm" method="POST" action="/run_traffic">
+    <!-- 엔터 제출 호환용 숨은 submit -->
+    <button type="submit" id="trafficHiddenSubmit" style="display:none"></button>
+    <!-- 트래픽 폼 히든 -->
+    <input type="hidden" name="selected_device" id="traffic_selected_device">
+    <input type="hidden" name="management_ip" id="traffic_management_ip">
+    <input type="hidden" name="vendor" id="traffic_vendor">
+  </form>
+
+  <form id="systemForm" method="POST" action="/run_system">
+    <!-- 엔터 제출 호환용 숨은 submit -->
+    <button type="submit" id="systemHiddenSubmit" style="display:none"></button>
+    <!-- 시스템 폼 히든 -->
+    <input type="hidden" name="selected_device" id="system_selected_device">
+    <input type="hidden" name="management_ip" id="system_management_ip">
+    <input type="hidden" name="vendor" id="system_vendor">
+  </form>
+
+  <header>방화벽 로그 추출 솔루션</header>
+
+  <div class="container">
+    <!-- ============ LEFT ============ -->
+    <div class="left-panel">
+      <div class="device-search">
+        <input type="text" id="searchInput" placeholder="장비명 검색..." onkeyup="filterTable()">
+      </div>
+
+      <div class="device-list">
+        <!-- UI용 히든(벤더 판정에 사용), 서버로는 안 보냄 -->
+        <input type="hidden" id="vendor_ui">
+
         <table id="deviceTable">
           <thead>
-          <tr>
-            <th>선택</th>
-            <th>장비명</th>
-            <th>IP</th>
-            <th>Vendor</th>
-          </tr>
+            <tr>
+              <th>선택</th><th>장비명</th><th>IP</th><th>Vendor</th>
+            </tr>
           </thead>
           <tbody>
-          {% for device in devices %}
+            {% for device in devices %}
             <tr>
-              <td><input type="radio" name="selected_device" value="{{ device.name }}" onclick="handleDeviceSelection('{{ device.vendor }}')"></td>
+              <td>
+                <input type="radio" name="ui_selected" value="{{ device.name }}"
+                       data-ip="{{ device.management_ip }}"
+                       data-vendor="{{ device.vendor }}"
+                       onclick="onSelectDevice(this)">
+              </td>
               <td>{{ device.name }}</td>
               <td>{{ device.management_ip }}</td>
               <td>{{ device.vendor }}</td>
             </tr>
-          {% endfor %}
+            {% endfor %}
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT ============ -->
+    <div class="right-panel">
+      <div class="card">
+        <div class="section-title">로그 종류 선택</div>
+        <div class="styled-radio">
+          <input type="radio" name="menu" value="traffic" id="menu_traffic" checked onclick="toggleMenu()">
+          <label for="menu_traffic">트래픽 로그</label>
+        </div>
+        <div class="styled-radio">
+          <input type="radio" name="menu" value="system" id="menu_system" onclick="toggleMenu()">
+          <label for="menu_system">시스템 로그</label>
+        </div>
+      </div>
+
+      <!-- 트래픽(이 입력들은 trafficForm 소속) -->
+      <div id="traffic-section" class="card">
+        <div class="section-title">탐색 방식</div>
+        <div class="styled-radio">
+          <input type="radio" name="mode" value="manual" id="mode_manual" checked form="trafficForm">
+          <label for="mode_manual">수동 선택</label>
+        </div>
+        <div class="styled-radio">
+          <input type="radio" name="mode" value="auto" id="mode_auto" form="trafficForm">
+          <label for="mode_auto">자동 탐색</label>
+        </div>
+
+        <label>출발지 IP</label>
+        <input type="text" name="src_ip" autocomplete="off" placeholder="예: 10.10.10.10" form="trafficForm">
+        <label>목적지 IP</label>
+        <input type="text" name="dst_ip" autocomplete="off" placeholder="예: 8.8.8.8" form="trafficForm">
+
+        <label>계정</label>
+        <input type="text" id="username" name="username" autocomplete="username" placeholder="아이디" form="trafficForm">
+        <label>비밀번호</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="비밀번호" form="trafficForm">
+
+        <button type="submit" form="trafficForm">트래픽 로그 실행</button>
+      </div>
+
+      <!-- 시스템(이 입력들은 systemForm 소속) -->
+      <div id="system-section" class="card" style="display:none;">
+        <div class="section-title">로그 레벨 및 계정</div>
+
+        <label>로그 레벨</label>
+        <select name="level" id="log_level" form="systemForm">
+          <option value="CRITICAL">CRITICAL</option>
+          <option value="MAJOR">MAJOR</option>
+          <option value="INFO">INFO</option>
+        </select>
+
+        <label>계정</label>
+        <input type="text" id="sys_username" name="username" autocomplete="username" placeholder="아이디" form="systemForm">
+        <label>비밀번호</label>
+        <input type="password" id="sys_password" name="password" autocomplete="current-password" placeholder="비밀번호" form="systemForm">
+
+        <button type="submit" form="systemForm">시스템 로그 실행</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">결과창</div>
+        <div id="result">{{ result|safe }}</div>
+      </div>
     </div>
   </div>
 
-  <div class="right-panel">
-    <div class="card">
-      <div class="section-title">로그 종류 선택</div>
-      <div class="styled-radio">
-        <input type="radio" name="menu" value="traffic" id="menu_traffic" checked onchange="toggleMenu()">
-        <label for="menu_traffic">트래픽 로그</label>
-      </div>
-      <div class="styled-radio">
-        <input type="radio" name="menu" value="system" id="menu_system" onchange="toggleMenu()">
-        <label for="menu_system">시스템 로그</label>
-      </div>
-    </div>
+  <script>
+  (function(){
+    function byId(id){ return document.getElementById(id); }
+    function qs(sel){ return document.querySelector(sel); }
+    function qsa(sel){ return document.querySelectorAll(sel); }
 
-    <div id="traffic-section" class="card">
-      <div class="section-title">탐색 방식</div>
-      <div class="styled-radio">
-        <input type="radio" name="mode" value="manual" id="mode_manual" checked onchange="toggleMode()">
-        <label for="mode_manual">수동 선택</label>
-      </div>
-      <div class="styled-radio">
-        <input type="radio" name="mode" value="auto" id="mode_auto" onchange="toggleMode()">
-        <label for="mode_auto">자동 탐색</label>
-      </div>
+    // ── 장비 선택 시: 두 폼의 hidden 동기화 + UI용 vendor 저장 ──
+    window.onSelectDevice = function(radio){
+      var name   = radio.value || '';
+      var ip     = radio.getAttribute('data-ip') || '';
+      var vendor = radio.getAttribute('data-vendor') || '';
 
-      <label>출발지 IP</label>
-      <input type="text" name="src_ip">
-      <label>목적지 IP</label>
-      <input type="text" name="dst_ip">
+      // trafficForm
+      byId('traffic_selected_device').value = name;
+      byId('traffic_management_ip').value   = ip;
+      byId('traffic_vendor').value          = vendor;
 
-      <label>계정</label>
-      <input type="text" id="username" name="username">
-      <label>비밀번호</label>
-      <input type="password" id="password" name="password">
+      // systemForm
+      byId('system_selected_device').value = name;
+      byId('system_management_ip').value   = ip;
+      byId('system_vendor').value          = vendor;
 
-      <button type="submit" formaction="/run_traffic">트래픽 로그 실행</button>
-    </div>
+      // UI vendor (enable/disable용)
+      byId('vendor_ui').value = vendor;
+      applyVendorRules();
+    };
 
-    <div id="system-section" class="card" style="display:none;">
-      <div class="section-title">로그 레벨 및 계정</div>
+    // ── 메뉴 토글: 보이는 섹션만 바꿔줌(폼은 분리되어 있어 경로는 확정) ──
+    window.toggleMenu = function(){
+      var isTraffic = qs('input[name="menu"]:checked').value === 'traffic';
+      byId('traffic-section').style.display = isTraffic ? 'block' : 'none';
+      byId('system-section').style.display  = isTraffic ? 'none'  : 'block';
+      applyVendorRules();
+    };
 
-      <label>로그 레벨</label>
-      <select name="level" id="log_level">
-        <option value="CRITICAL">CRITICAL</option>
-        <option value="MAJOR">MAJOR</option>
-        <option value="INFO">INFO</option>
-      </select>
+    // ── 벤더 규칙: Secui면 계정 비활성, 그 외엔 활성(현재 섹션만) ──
+    function applyVendorRules(){
+      var v = (byId('vendor_ui').value || '').toLowerCase();
+      var isSecui = v.indexOf('secui') !== -1;
 
-      <label>계정</label>
-      <input type="text" id="sys_username" name="username">
-      <label>비밀번호</label>
-      <input type="password" id="sys_password" name="password">
+      // 기본 모두 끄고 시작
+      byId('username').disabled     = true;
+      byId('password').disabled     = true;
+      byId('sys_username').disabled = true;
+      byId('sys_password').disabled = true;
 
-      <button type="submit" formaction="/run_system">시스템 로그 실행</button>
-    </div>
+      if (isSecui) return; // Secui는 계정 전송 불필요
 
-    <div class="card">
-      <div class="section-title">결과창</div>
-      <div id="result">{{ result|safe }}</div>
-    </div>
-  </div>
-</div>
-</form>
+      var isTraffic = qs('input[name="menu"]:checked').value === 'traffic';
+      if (isTraffic){
+        byId('username').disabled = false;
+        byId('password').disabled = false;
+      }else{
+        byId('sys_username').disabled = false;
+        byId('sys_password').disabled = false;
+      }
+    }
 
-<script>
-  function toggleMode() {
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    const radios = document.querySelectorAll("input[type=radio][name=selected_device]");
-    radios.forEach(r => r.disabled = (mode === "auto"));
-  }
+    // ── 장비명 필터 ──
+    window.filterTable = function(){
+      var q = (byId('searchInput').value || '').toLowerCase();
+      var rows = qsa('#deviceTable tbody tr');
+      for (var i=0;i<rows.length;i++){
+        var name = (rows[i].cells[1].textContent || '').toLowerCase();
+        rows[i].style.display = name.indexOf(q) !== -1 ? '' : 'none';
+      }
+    };
 
-  function toggleMenu() {
-    const menu = document.querySelector('input[name="menu"]:checked').value;
-    document.getElementById("traffic-section").style.display = (menu === "traffic") ? "block" : "none";
-    document.getElementById("system-section").style.display = (menu === "system") ? "block" : "none";
-  }
+    // ── Enter 키 제출 보조: 포커스가 트래픽 입력이면 trafficForm, 시스템이면 systemForm ──
+    document.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      var active = document.activeElement;
+      if(!active) return;
 
-  function handleDeviceSelection(vendor) {
-    const isSecui = vendor === "Secui Bluemax";
-    document.getElementById("sys_username").disabled = isSecui;
-    document.getElementById("sys_password").disabled = isSecui;
-  }
-
-  function filterTable() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll("#deviceTable tbody tr");
-    rows.forEach(row => {
-      const name = row.cells[1].textContent.toLowerCase();
-      row.style.display = name.includes(input) ? "" : "none";
+      var trafficIds = new Set(['username','password','mode_manual','mode_auto']);
+      var systemIds  = new Set(['sys_username','sys_password','log_level']);
+      if (trafficIds.has(active.id)){
+        byId('trafficHiddenSubmit').click();
+      } else if (systemIds.has(active.id)){
+        byId('systemHiddenSubmit').click();
+      }
+      // 그 외(예: src_ip/dst_ip)는 트래픽 폼 소속
+      if (active.name === 'src_ip' || active.name === 'dst_ip'){
+        byId('trafficHiddenSubmit').click();
+      }
     });
-  }
 
-  window.onload = function () {
-    toggleMode();
-    toggleMenu();
-  }
-</script>
+    // 초기화
+    document.addEventListener('DOMContentLoaded', function(){
+      toggleMenu();
+      applyVendorRules();
+    });
+  })();
+  </script>
 </body>
 </html>

@@ -4,6 +4,8 @@ from firewall_ip_check_modi import find_target_firewall
 from secui_log_api import fetch_secui_traffic_logs, fetch_secui_system_logs
 from paloalto_firewall_log_new import paloalto_fetch_traffic
 from paloalto_system_log_new import paloalto_fetch_system
+from pretty import render_traffic_table, render_system_table
+from palo_unified import palo_system_records, palo_traffic_records
 
 app = Flask(__name__)
 
@@ -42,7 +44,7 @@ def run_traffic():
         if not selected_name:
             return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비를 선택하세요.")
         info = firewall_info_dict.get(selected_name)
-        print("[디버깅/선택창]",info)
+        print("[디버깅/선택창-Traffic]",info)
         if not info:
             return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 정보 없음.")
         vendor = info['vendor']
@@ -50,9 +52,11 @@ def run_traffic():
         print(f"[디버깅용] 수동 모드 선택: {selected_name}, vendor: {vendor}")  # 디버깅용
 
         if vendor == "Paloalto":
-            result = paloalto_fetch_traffic(firewall_ip , src_ip, dst_ip, username, password)
+            recs = palo_traffic_records(firewall_ip, src_ip, dst_ip, username, password)
+            result = render_traffic_table(recs)
         elif vendor == "Secui Bluemax":
-            result = fetch_secui_traffic_logs(info,src_ip,dst_ip)
+            raw = fetch_secui_traffic_logs(info,src_ip,dst_ip)
+            result = render_traffic_table(raw)
         else:
             result = f"{vendor}는 지원하지 않는 방화벽입니다."
     else:  # 자동 탐색
@@ -67,9 +71,11 @@ def run_traffic():
             vendor = info['vendor']
             firewall_ip = info['management_ip']
             if vendor == "Paloalto":
-                result += paloalto_fetch_traffic(firewall_ip, src_ip, dst_ip, username, password)
+                recs = palo_traffic_records(firewall_ip, src_ip, dst_ip, username, password)
+                result = render_traffic_table(recs)
             elif vendor == "Secui Bluemax":
-                result += fetch_secui_traffic_logs(info)
+                raw = fetch_secui_traffic_logs(info,src_ip,dst_ip)
+                result = render_traffic_table(raw)
             else:
                 result += f"{vendor}는 지원하지 않는 방화벽입니다.<br>"
 
@@ -89,7 +95,7 @@ def run_system():
         return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 선택 필수")
 
     info = firewall_info_dict.get(selected_name)
-    print("[디버깅/선택창]",info)
+    print("[디버깅/선택창-System]",info)
     if not info:
         return render_template("index.html", devices=device_list_df.to_dict(orient='records'), result="장비 정보 없음.")
     vendor = info['vendor']
@@ -102,10 +108,11 @@ def run_system():
         print("여기서보자",level)
         print("여기서보자",username)
         print("여기서보자",password)
-        result = paloalto_fetch_system(firewall_ip, level, username, password)
-        
+        recs = palo_system_records(firewall_ip, level, username, password)
+        result = render_system_table(recs)
     elif vendor == "Secui Bluemax":
-        result = fetch_secui_system_logs(info, level)
+        raw = fetch_secui_system_logs(info, level)
+        result = render_system_table(raw)
         print("보낸 level은 뭘까요",level) # 디버깅깅
     else:
         result = f"{vendor}는 지원하지 않는 방화벽입니다."
