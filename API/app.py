@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 import pandas as pd
 from firewall_ip_check_modi import find_target_firewall
 from secui_log_api import fetch_secui_traffic_logs, fetch_secui_system_logs
+from paloalto_firewall_log_new import paloalto_fetch_traffic
+from paloalto_system_log_new import paloalto_fetch_system
 
 app = Flask(__name__)
 
@@ -46,7 +48,7 @@ def run_traffic():
         print(f"[디버깅용] 수동 모드 선택: {selected_name}, vendor: {vendor}")  # 디버깅용
 
         if vendor == "Paloalto":
-            result = paloalto_fetch_traffic(info, username, password)
+            result = paloalto_fetch_traffic(info, src_ip, dst_ip,username, password)
         elif vendor == "Secui Bluemax":
             result = fetch_secui_traffic_logs(info,src_ip,dst_ip)
         else:
@@ -62,7 +64,7 @@ def run_traffic():
                 continue
             vendor = info['vendor']
             if vendor == "Paloalto":
-                result += paloalto_fetch_traffic(info, username, password)
+                result += paloalto_fetch_traffic(info, src_ip, dst_ip, username, password)
             elif vendor == "Secui Bluemax":
                 result += fetch_secui_traffic_logs(info)
             else:
