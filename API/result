@@ -1,0 +1,6 @@
+[SECUI traffic RAW type] list
+[SECUI traffic RAW list len] 4
+[SECUI traffic RAW first item] ['etime', 'fwrule_name', 'src_ip', 'dst_ip', 'dst_port', 'app_id', 'protocol', 'action', 'reason', 'dst_cloud_id', 'frag_offset', 'fwrule_file_id', 'fwrule_id', 'in_zone', 'log_id', 'logtype', 'logtype_raw', 'mach_id', 'session_id', 'src_cloud_id', 'src_port', 'stime', 'tot_bytes', 'user_id']
+[SECUI after _to_records] keys: ['time', 'severity', 'message']
+[SECUI after _to_records] sample: {'time': '', 'severity': '', 'message': 'etime fwrule_name src_ip dst_ip dst_port app_id protocol action reason dst_cloud_id frag_offset fwrule_file_id fwrule_id in_zone log_id logtype logtype_raw mach_id session_id src_cloud_id src_port stime tot_bytes user_id'}
+2025-10-20 15:56:06,323 - INFO - 127.0.0.1 - - [20/Oct/2025 15:56:06] "POST /run_traffic HTTP/1.1" 200 -
