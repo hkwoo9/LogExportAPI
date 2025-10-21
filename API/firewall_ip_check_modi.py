@@ -57,7 +57,7 @@ def find_target_firewall(src_ip, dst_ip, firewall_info):
         else:
             internal_firewalls.append(fw)
 
-    # IP가 어느 방화벽에 속하는지 확인
+    
     is_src_internal = any(ip_in_range(src_ip, fw['ip_range']) for fw in internal_firewalls)
     is_dst_internal = any(ip_in_range(dst_ip, fw['ip_range']) for fw in internal_firewalls)
     is_src_gihwa = any(ip_in_range(src_ip, fw['ip_range']) for fw in gihwa_firewalls)
@@ -68,7 +68,7 @@ def find_target_firewall(src_ip, dst_ip, firewall_info):
         if ip_in_range(src_ip, fw['ip_range']) or ip_in_range(dst_ip, fw['ip_range']):
             matched_firewalls.append(fw)
 
-    # DS관문 포함 조건
+    #  포함 조건
     if ds_gateway:
         if is_src_internal:
             if not is_dst_internal and not is_dst_gihwa:
