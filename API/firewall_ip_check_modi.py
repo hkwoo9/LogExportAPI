@@ -4,7 +4,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-EXCEL_FILE = r"firewall_info_new.xlsx"
+EXCEL_FILE = r"D:\Microsoft VS Code\test\Firewall_Log_API\firewall_info_new.xlsx"
 
 def load_firewall_info():
   try:
@@ -39,9 +39,11 @@ def ip_in_range(ip, ip_range):
   except ValueError:
     return False
 
-def find_target_firewall(src_ip, dst_ip, firewall_info):
+def find_target_firewall(src_ip, dst_ip):
+    firewall_info = load_firewall_info()
     src_ip = ipaddress.ip_address(src_ip)
     dst_ip = ipaddress.ip_address(dst_ip)
+
 
     ds_gateway = None
     internal_firewalls = []
@@ -50,9 +52,9 @@ def find_target_firewall(src_ip, dst_ip, firewall_info):
     matched_firewalls = []
 
     for fw in firewall_info:
-        if fw['name'] == "관문":
+        if fw['name'] == "DS관문":
             ds_gateway = fw
-        elif "준사" in fw['name']:
+        elif "기흥화성준사내" in fw['name']:
             gihwa_firewalls.append(fw)
         else:
             internal_firewalls.append(fw)
